@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * @file
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function rooms_channel_manager_menu() {
+  $items = array();
+
+  return $items;
+}
