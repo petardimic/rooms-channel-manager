@@ -6,9 +6,138 @@
 
 /**
  * Implements hook_menu().
- */
 function rooms_channel_manager_menu() {
   $items = array();
 
   return $items;
 }
+ */
+
+/**
+ * Implements hook_page_alter().
+ *
+ * Add channel management form to unit availability management page.
+ */
+function rooms_channel_manager_page_alter(&$page) {
+  if (isset($page['content']['system_main']['#theme']) &&
+     ($page['content']['system_main']['#theme'] == 'rooms_three_month_calendar') &&
+     ($page['content']['system_main']['#form']['#form_id'] == 'update_availability_calendar_form')) {
+    $availability_form = $page['content']['system_main']['#form'];
+    $page['content']['system_main']['#form'] = array($availability_form, drupal_get_form('rooms_channel_manager_unit_management_form'));
+  }
+}
+
+function rooms_channel_manager_unit_management_form($form, &$form_state) {
+  $form = array();
+
+  $form['rooms_channel_management'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Channel Management'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('Sync this unit\'s availability with other booking services.'),
+  );
+
+  $form['rooms_channel_management']['ical_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('iCal URL'),
+    '#description' => t('Enter an iCal URL - availability will be synced from this calendar.'),
+    '#default_value' => variable_get('rooms_channel_management_ical_url', ''),
+    // FIXME: need a bit better data model than this!
+  );
+
+  $form['rooms_channel_management']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save changes'),
+  );
+
+  return($form);
+}
+
+/**
+ * rooms_channel_manager_unit_management_form validation function.
+ */
+function rooms_channel_manager_unit_management_form_validate(&$form, &$form_state) {
+  if (!valid_url($form_state['values']['ical_url'], TRUE)) {
+    form_set_error('url', t('The URL %url is invalid. Enter a fully-qualified URL, such as http://www.example.com/feed.xml.', array('%url' => $form_state['values']['ical_url'])));
+  }
+}
+
+/**
+ * rooms_channel_manager_unit_management_form submission function.
+ */
+function rooms_channel_manager_unit_management_form_submit(&$form, &$form_state) {
+  variable_set('rooms_channel_management_ical_url', $form_state['values']['ical_url']);
+}
+
+/**
+ * Implements hook_cron()
+ */
+function rooms_channel_manager_cron() {
+  $queue = DrupalQueue::get('rooms_channel_manager');
+  if ($ical_url = variable_get('rooms_channel_management_ical_url', '')) {
+    $queue->createItem(array('url' => $ical_url));
+  }
+}
+
+/**
+ * Implements hook_cron_queue_info()
+ */
+function rooms_channel_manager_cron_queue_info() {
+  $queues['rooms_channel_manager'] = array(
+    'worker callback' => 'rooms_channel_manager_fetch_ical',
+    'time' => 60,
+  );
+  return $queues;
+}
+
+/**
+ * Callback to process ical feeds.
+ */
+function rooms_channel_manager_fetch_ical($item) {
+  $headers = array();
+  // TODO
+  // $headers = array('If-Modified-Since' => gmdate(DATE_RFC1123, $last_fetched));
+  $response = drupal_http_request($item['url'], array('headers' => $headers));
+  if ($response->code !== '200') {
+    throw new Exception('Did not receive expected response from remote ical URL.');
+  }
+
+  $data = $response->data;
+  // Parse iCal data.
+  $vcalendar = new vcalendar();
+  $vcalendar->parse($data);
+  $now = $datetime = new DateTime();
+  while ($vevent = $vcalendar->getComponent('vevent')) {
+
+    // Get event start date.
+    $dtstart_array = $vevent->getProperty('dtstart', 1, TRUE);
+    $dtstart = $dtstart_array['value'];
+    $startDate = "{$dtstart['year']}-{$dtstart['month']}-{$dtstart['day']}";
+    $startDateTime = DateTime::createFromFormat('Y-m-d', $startDate);
+    if ($startDateTime > $now) {
+
+      // This event is in the future, let's add it to the calendar.
+      $dtend_array = $vevent->getProperty('dtend', 1, TRUE);
+      $dtend = $dtend_array['value'];
+      $endDate = "{$dtend['year']}-{$dtend['month']}-{$dtend['day']}";
+      $endDateTime = DateTime::createFromFormat('Y-m-d', $endDate);
+
+      // TODO: can we get more specific here?
+      $event_id = ROOMS_NOT_AVAILABLE;
+      $be = new BookingEvent($item['unit_id'], $event_id, $startDateTime, $endDateTime);
+      $events = array($be);
+      $rc = new UnitCalendar($item['unit_id']);
+      $response = $rc->updateCalendar($events);
+      if ($response[$event_id] == ROOMS_BLOCKED) {
+        drupal_set_message(t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period.'), 'warning');
+      }
+      elseif ($response[$event_id] == ROOMS_UPDATED) {
+        drupal_set_message(t('Calendar Updated'));
+      }
+    }
+
+  }
+
+}
+
