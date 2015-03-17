@@ -123,6 +123,10 @@ function rooms_channel_manager_fetch_ical($item) {
       $endDate = "{$dtend['year']}-{$dtend['month']}-{$dtend['day']}";
       $endDateTime = DateTime::createFromFormat('Y-m-d', $endDate);
 
+      // A Rooms booking event expects the end date to be the date before
+      // departure.
+      $endDateTime->sub(new DateInterval('P1D'));
+
       // TODO: can we get more specific here?
       $event_id = ROOMS_NOT_AVAILABLE;
       $be = new BookingEvent($item['unit_id'], $event_id, $startDateTime, $endDateTime);
