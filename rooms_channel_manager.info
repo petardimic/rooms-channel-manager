@@ -6,6 +6,7 @@ version = 1.x-dev
 package = Rooms
 
 dependencies[] = rooms_availability
+dependencies[] = rooms_booking
 dependencies[] = rooms_unit
 dependencies[] = date
 

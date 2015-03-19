@@ -1,0 +1,27 @@
+<?php
+
+/**
+ * @file
+ *
+ * Sets up our booking type.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function rooms_channel_manager_install() {
+
+  // Create the external booking type.
+  rooms_booking_create_external_booking_type();
+}
+
+/**
+ * Creates the external booking type.
+ */
+function rooms_booking_create_external_booking_type() {
+  $booking = new RoomsBookingType(array(
+    'label' => 'External Booking',
+    'type' => 'external_booking',
+  ));
+  rooms_booking_type_save($booking);
+}

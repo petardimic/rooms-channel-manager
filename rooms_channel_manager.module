@@ -109,28 +109,35 @@ function rooms_channel_manager_fetch_ical($item) {
   $vcalendar->parse($data);
   $now = $datetime = new DateTime();
   while ($vevent = $vcalendar->getComponent('vevent')) {
+    dsm($vevent);
 
     // Get event start date.
     $dtstart_array = $vevent->getProperty('dtstart', 1, TRUE);
     $dtstart = $dtstart_array['value'];
-    $startDate = "{$dtstart['year']}-{$dtstart['month']}-{$dtstart['day']}";
+    $startDate = $dtstart['year'] . '-' . sprintf('%02d', $dtstart['month']) . '-' . sprintf('%02d', $dtstart['day']);
     $startDateTime = DateTime::createFromFormat('Y-m-d', $startDate);
     if ($startDateTime > $now) {
 
       // This event is in the future, let's add it to the calendar.
       $dtend_array = $vevent->getProperty('dtend', 1, TRUE);
       $dtend = $dtend_array['value'];
-      $endDate = "{$dtend['year']}-{$dtend['month']}-{$dtend['day']}";
+      $endDate = $dtend['year'] . '-' . sprintf('%02d', $dtend['month']) . '-' . sprintf('%02d', $dtend['day']);
       $endDateTime = DateTime::createFromFormat('Y-m-d', $endDate);
 
       // A Rooms booking event expects the end date to be the date before
       // departure.
       $endDateTime->sub(new DateInterval('P1D'));
 
-      // TODO: can we get more specific here?
-      $event_id = ROOMS_NOT_AVAILABLE;
-      $be = new BookingEvent($item['unit_id'], $event_id, $startDateTime, $endDateTime);
-      $events = array($be);
+      // TODO - different booking type?
+      // FIXME - configure unit id.
+      $booking = rooms_booking_create(array('unit_id' => 1, 'type' => 'external_booking', 'uid' => 0, 'start_date' => $startDate, 'end_date' => $endDate));
+      $booking->created = time();
+      $booking->title = $vevent->summary['value'];
+      $booking->name = $vevent->summary['value'];
+      $booking->status = 1;
+      rooms_booking_save($booking);
+      /*
+      $events = array($booking);
       $rc = new UnitCalendar($item['unit_id']);
       $response = $rc->updateCalendar($events);
       if ($response[$event_id] == ROOMS_BLOCKED) {
@@ -139,9 +146,8 @@ function rooms_channel_manager_fetch_ical($item) {
       elseif ($response[$event_id] == ROOMS_UPDATED) {
         drupal_set_message(t('Calendar Updated'));
       }
+       */
     }
 
   }
-
 }
-
