@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * @file
+ */
+
+function rooms_airbnb_rooms_channel_source() {
+  $info = array();
+  $info['AirBnB'] = array(
+    'name' => 'AirBnB source',
+    'description' => 'Imports AirBnB availability feeds.',
+    'handler' => array(
+      'parent' => 'iCalEventImporter',
+      'class' => 'AirBnbEventImporter',
+      'file' => 'includes/AirBnbEventImporter.inc',
+      'path' => drupal_get_path('module', 'rooms_airbnb'),
+      'module' => 'rooms_airbnb',
+    ),
+  );
+  return $info;
+}

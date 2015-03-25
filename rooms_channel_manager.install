@@ -12,16 +12,55 @@
 function rooms_channel_manager_install() {
 
   // Create the external booking type.
-  rooms_booking_create_external_booking_type();
+  rooms_channel_manager_create_external_booking_type();
 }
 
 /**
  * Creates the external booking type.
  */
-function rooms_booking_create_external_booking_type() {
+function rooms_channel_manager_create_external_booking_type() {
   $booking = new RoomsBookingType(array(
     'label' => 'External Booking',
     'type' => 'external_booking',
   ));
   rooms_booking_type_save($booking);
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function rooms_channel_manager_schema() {
+  $schema['rooms_channel_manager_sources'] = array(
+    'description' => t('Table storing channel manager sources'),
+    'fields' => array(
+      'sid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary source ID field for the table. Not used for anything except internal lookups.',
+        // 'no export' => TRUE, // Do not export database-only keys.
+      ),
+      'unit_id' => array(
+        'description' => 'Bookable Unit Identifier.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'module' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'description' => 'Module providing this source.',
+      ),
+      'config' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'description' => 'My exportable configuration data.',
+      ),
+    ),
+    'primary key' => array('sid'),
+    'unique keys' => array(
+      'unit_id_module' => array('unit_id', 'module'),
+    ),
+  );
+  return $schema;
 }

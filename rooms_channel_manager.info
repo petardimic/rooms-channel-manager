@@ -11,3 +11,5 @@ dependencies[] = rooms_unit
 dependencies[] = date
 
 files[] = plugins/iCalcreator/iCalcreator.class.php
+files[] = includes/EventImporter.inc
+files[] = includes/iCalEventImporter.inc

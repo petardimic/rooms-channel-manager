@@ -1,0 +1,10 @@
+name = Rooms AirBnB
+description = Import availability data from AirBnB sites
+core = 7.x
+version = 1.x-dev
+
+package = Rooms
+
+dependencies[] = rooms_channel_manager
+
+files[] = includes/AirBnbEventImporter.inc
