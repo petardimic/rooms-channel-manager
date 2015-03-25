@@ -32,7 +32,7 @@ function rooms_channel_manager_page_alter(&$page) {
         $form_id = $source['handler']['class'] . '_config_form';
         $form_state = form_state_defaults();
         if (!isset($form_state['input'])) {
-          $form_state['input'] = $form_state ['method'] == 'get' ? $_GET : $_POST;
+          $form_state['input'] = $form_state['method'] == 'get' ? $_GET : $_POST;
         }
         $form_state['validate_handlers'] = array('rooms_channel_manager_config_form_validate');
         $form_state['submit_handlers'] = array('rooms_channel_manager_config_form_submit');
