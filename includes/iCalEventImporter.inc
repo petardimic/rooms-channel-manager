@@ -45,12 +45,18 @@ class iCalEventImporter extends EventImporter {
         // departure.
         $endDateTime->sub(new DateInterval('P1D'));
 
+        $description = '';
+        if (!empty($vevent->description)) {
+          $description = $vevent->description[0]['value'];
+        }
+
         $events[] = array(
+          'type' => 'booking',
           'startDate' => $startDate,
           'endDate' => $endDate,
           'summary' => $vevent->summary['value'],
+          'description' => $description,
         );
-
       }
     }
 

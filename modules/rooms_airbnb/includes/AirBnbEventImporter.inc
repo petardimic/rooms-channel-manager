@@ -20,4 +20,18 @@ class AirBnbEventImporter extends iCalEventImporter {
     return $form;
   }
 
+  public function fetch() {
+    $events = parent::fetch();
+    foreach ($events as &$event) {
+
+      // Parse Airbnb's ical format to determine what events are actual bookings.
+      // If the summary line ends with a booking reference, this is a booking.
+      if (!preg_match('/ \([A-Z0-9]{6}\)$/', $event['summary'])) {
+        $event['type'] = 'availability';
+      }
+    }
+
+    return $events;
+  }
+
 }

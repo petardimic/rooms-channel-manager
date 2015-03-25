@@ -81,19 +81,35 @@ class EventImporter {
    */
   public function importBookings($events) {
     foreach ($events as $event) {
-      $booking = rooms_booking_create(array('unit_id' => $this->config->unit_id,
-                                            'type' => 'external_booking',
-                                            'uid' => 0,
-                                            'booking_status' => ROOMS_ANON_BOOKED,
-                                            'start_date' => $event['startDate'],
-                                            'end_date' => $event['endDate']));
-      $booking->created = time();
-      $booking->name = $event['summary'];
-      $booking->title = $event['summary'];
-      $booking->status = 1;
-      rooms_booking_save($booking);
+      if ($event['type'] == 'booking') {
+        $booking = rooms_booking_create(array('unit_id' => $this->config->unit_id,
+                                              'type' => 'external_booking',
+                                              'uid' => 0,
+                                              'booking_status' => ROOMS_ANON_BOOKED,
+                                              'start_date' => $event['startDate'],
+                                              'end_date' => $event['endDate']));
+        $booking->created = time();
+        $booking->name = $event['summary'];
+        $booking->title = $event['summary'];
+        $booking->status = 1;
+        rooms_booking_save($booking);
+      }
+      else {
+        $event_id = ROOMS_NOT_AVAILABLE;
+        $startDateTime = DateTime::createFromFormat('Y-m-d', $event['startDate']);
+        $endDateTime = DateTime::createFromFormat('Y-m-d', $event['endDate']);
+        $be = new BookingEvent($this->config->unit_id, $event_id, $startDateTime, $endDateTime);
+        $events = array($be);
+        $rc = new UnitCalendar($this->config->unit_id);
+        $response = $rc->updateCalendar($events);
+        if ($response[$event_id] == ROOMS_BLOCKED) {
+          drupal_set_message(t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period.'), 'warning');
+        }
+        elseif ($response[$event_id] == ROOMS_UPDATED) {
+          drupal_set_message(t('Calendar Updated'));
+        }
+      }
     }
   }
-
 
 }
