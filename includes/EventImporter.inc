@@ -39,11 +39,34 @@ class EventImporter {
 
 
   /**
+   * Determine if we can/should fetch updates from the remote source. The
+   * default behavior is to wait at least 1 hour between updates.
+   */
+  public function updateNeeded() {
+    if (isset($this->config->module) && isset($this->config->unit_id)) {
+      $last_updated = db_query("SELECT last_updated FROM {rooms_channel_manager_sources} WHERE module = :module AND unit_id = :unit_id",
+                         array(':module' => $this->config->module, ':unit_id' => $this->config->unit_id))->fetchField();
+      if ((REQUEST_TIME - $last_updated) > 3600) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
    * Fetch Events from remote source and import bookings.
    */
   public function importBookingsFromSource() {
     $events = $this->fetch();
     $this->importBookings($events);
+    if (isset($this->config->module) && isset($this->config->unit_id)) {
+      $record = array(
+        'last_updated' => REQUEST_TIME,
+        'module' => $this->config->module,
+        'unit_id' => $this->config->unit_id,
+      );
+      drupal_write_record('rooms_channel_manager_sources', $record, array('module', 'unit_id'));
+    }
   }
 
   /**

@@ -56,6 +56,12 @@ function rooms_channel_manager_schema() {
         'size' => 'big',
         'description' => 'My exportable configuration data.',
       ),
+      'last_updated' => array(
+        'description' => 'The Unix timestamp when the source was last checked.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'primary key' => array('sid'),
     'unique keys' => array(

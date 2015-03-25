@@ -99,6 +99,8 @@ function rooms_channel_manager_update_availability($data) {
     $importer = new $data['class'];
     $importer->config->unit_id = $data['unit_id'];
     $importer->load();
-    $importer->importBookingsFromSource();
+    if ($importer->updateNeeded()) {
+      $importer->importBookingsFromSource();
+    }
   }
 }
