@@ -61,6 +61,7 @@ class EventImporter {
       $booking = rooms_booking_create(array('unit_id' => $this->config->unit_id,
                                             'type' => 'external_booking',
                                             'uid' => 0,
+                                            'booking_status' => ROOMS_ANON_BOOKED,
                                             'start_date' => $event['startDate'],
                                             'end_date' => $event['endDate']));
       $booking->created = time();
