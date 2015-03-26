@@ -104,6 +104,20 @@ class EventImporter {
           continue;
         }
 
+        // Check if a locked event is blocking the update.
+        $start_date = DateTime::createFromFormat('Y-m-d', $event['startDate']);
+        $end_date = DateTime::createFromFormat('Y-m-d', $event['endDate']);
+        $adjusted_end_date = clone($end_date);
+        $adjusted_end_date->modify('-1 day');
+        $states_confirmed = $uc->getStates($start_date, $adjusted_end_date);
+        $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
+        $state_diff_confirmed = array_diff($states_confirmed, $valid_states);
+        if (count($state_diff_confirmed) > 0) { // A conflicting confirmed booking was found.
+          // @TODO: send an email.
+          drupal_set_message('we got a problem yall');
+          continue;
+        }
+
         // Make a user ID for this customer.
         $account = new StdClass();
         $account->name = rooms_channel_manager_unique_username($name);
@@ -131,6 +145,7 @@ class EventImporter {
         $booking->name = $name;
         $booking->title = $event['summary'];
         $booking->status = 1;
+        $booking->data = serialize(array('service' => 'Airbnb'));
         rooms_booking_save($booking);
       }
       else {
