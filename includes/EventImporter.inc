@@ -90,12 +90,23 @@ class EventImporter {
 
     // Get this unit's availability calendar.
     $uc = new UnitCalendar($this->config->unit_id);
+
+    // Import external events.
     foreach ($events as $event) {
       if ($event['type'] == 'booking') {
 
+        $name = $this->getCustomerName($event);
+
+        // Ensure that this is not a duplicate booking.
+        $result = db_query("SELECT COUNT(booking_id) FROM {rooms_bookings} WHERE name = :name AND start_date = :start_date AND end_date = :end_date",
+                     array(':name' => $name, ':start_date' => $event['startDate'], ':end_date' => $event['endDate']))->fetchField();
+        if ($result > 0) {
+          continue;
+        }
+
         // Make a user ID for this customer.
         $account = new StdClass();
-        $account->name = rooms_channel_manager_unique_username($this->getCustomerName($event));
+        $account->name = rooms_channel_manager_unique_username($name);
         $account->pass = user_password(20);
         $account->status = 1;
         user_save($account);
@@ -103,7 +114,7 @@ class EventImporter {
         // Generate commerce profile.
         $profile = commerce_customer_profile_new('billing', $account->uid);
         $profile_wrapper = entity_metadata_wrapper('commerce_customer_profile', $profile);
-        $profile_wrapper->commerce_customer_address->name_line = $this->getCustomerName($event);
+        $profile_wrapper->commerce_customer_address->name_line = $name;
         commerce_customer_profile_save($profile);
 
         // Create booking.
@@ -114,7 +125,7 @@ class EventImporter {
                                               'start_date' => $event['startDate'],
                                               'end_date' => $event['endDate']));
         $booking->created = time();
-        $booking->name = $this->getCustomerName($event);
+        $booking->name = $name;
         $booking->title = $event['summary'];
         $booking->status = 1;
         rooms_booking_save($booking);
