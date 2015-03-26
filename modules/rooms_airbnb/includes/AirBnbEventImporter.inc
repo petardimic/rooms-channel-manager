@@ -20,6 +20,15 @@ class AirBnbEventImporter extends iCalEventImporter {
     return $form;
   }
 
+  /**
+   * Get the customer's name for an event.
+   */
+  public function getCustomerName($event) {
+    preg_match('/((\w[\s]?)*)( \([A-Z0-9]{6}\)$)/', $event['summary'], $matches);
+    return $matches[1];
+  }
+
+
   public function fetch() {
     $events = parent::fetch();
     foreach ($events as &$event) {

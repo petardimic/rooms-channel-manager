@@ -77,19 +77,44 @@ class EventImporter {
   public function fetch() {}
 
   /**
+   * Find customer name for an event.
+   */
+  public function getCustomerName($event) {
+    return '';
+  }
+
+  /**
    * Add remote bookings.
    */
   public function importBookings($events) {
+
+    // Get this unit's availability calendar.
+    $uc = new UnitCalendar($this->config->unit_id);
     foreach ($events as $event) {
       if ($event['type'] == 'booking') {
+
+        // Make a user ID for this customer.
+        $account = new StdClass();
+        $account->name = rooms_channel_manager_unique_username($this->getCustomerName($event));
+        $account->pass = user_password(20);
+        $account->status = 1;
+        user_save($account);
+
+        // Generate commerce profile.
+        $profile = commerce_customer_profile_new('billing', $account->uid);
+        $profile_wrapper = entity_metadata_wrapper('commerce_customer_profile', $profile);
+        $profile_wrapper->commerce_customer_address->name_line = $this->getCustomerName($event);
+        commerce_customer_profile_save($profile);
+
+        // Create booking.
         $booking = rooms_booking_create(array('unit_id' => $this->config->unit_id,
                                               'type' => 'external_booking',
-                                              'uid' => 0,
+                                              'uid' => $account->uid,
                                               'booking_status' => ROOMS_ANON_BOOKED,
                                               'start_date' => $event['startDate'],
                                               'end_date' => $event['endDate']));
         $booking->created = time();
-        $booking->name = $event['summary'];
+        $booking->name = $this->getCustomerName($event);
         $booking->title = $event['summary'];
         $booking->status = 1;
         rooms_booking_save($booking);
@@ -100,8 +125,7 @@ class EventImporter {
         $endDateTime = DateTime::createFromFormat('Y-m-d', $event['endDate']);
         $be = new BookingEvent($this->config->unit_id, $event_id, $startDateTime, $endDateTime);
         $events = array($be);
-        $rc = new UnitCalendar($this->config->unit_id);
-        $response = $rc->updateCalendar($events);
+        $response = $uc->updateCalendar($events);
         if ($response[$event_id] == ROOMS_BLOCKED) {
           drupal_set_message(t('Could not update calendar because a locked event is blocking the update - you need to unlock any locked events in that period.'), 'warning');
         }

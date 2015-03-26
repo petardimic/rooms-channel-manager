@@ -104,3 +104,35 @@ function rooms_channel_manager_update_availability($data) {
     }
   }
 }
+
+/**
+ * Get a unique username.
+ */
+function rooms_channel_manager_unique_username($name, $uid = 0) {
+
+  // Strip illegal characters.
+  $name = preg_replace('/[^\x{80}-\x{F7} a-zA-Z0-9@_.\'-]/', '', $name);
+
+  // Strip leading and trailing spaces.
+  $name = trim($name);
+
+  // Convert any other series of spaces to a single underscore.
+  $name = preg_replace('/ +/', '_', $name);
+
+  // If there's nothing left use a default.
+  $name = ('' === $name) ? t('user') : $name;
+
+  // Truncate to reasonable size.
+  $name = (drupal_strlen($name) > (USERNAME_MAX_LENGTH - 10)) ? drupal_substr($name, 0, USERNAME_MAX_LENGTH - 11) : $name;
+
+  // Iterate until we find a unique name.
+  $i = 0;
+
+  do {
+    $new_name = empty($i) ? $name : $name . '_' . $i;
+    $found = db_query_range("SELECT uid from {users} WHERE uid <> :uid AND name = :name", 0, 1, array(':uid' => $uid, ':name' => $new_name))->fetchAssoc();
+    $i++;
+  } while (!empty($found));
+
+  return $new_name;
+}
