@@ -117,8 +117,11 @@ class EventImporter {
         $profile_wrapper->commerce_customer_address->name_line = $name;
         commerce_customer_profile_save($profile);
 
+        $unit = rooms_unit_load($this->config->unit_id);
+
         // Create booking.
         $booking = rooms_booking_create(array('unit_id' => $this->config->unit_id,
+                                              'unit_type' => $unit->type,
                                               'type' => 'external_booking',
                                               'uid' => $account->uid,
                                               'booking_status' => ROOMS_ANON_BOOKED,
