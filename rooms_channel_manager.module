@@ -5,6 +5,10 @@
  */
 
 /**
+ * Drupal hook implementations.
+ */
+
+/**
  * Implements hook_page_alter().
  *
  * Add channel management forms to unit availability management page.
@@ -48,26 +52,6 @@ function rooms_channel_manager_page_alter(&$page) {
 }
 
 /**
- * Wrapper function - execute validation handler for configuration form.
- */
-function rooms_channel_manager_config_form_validate($form, &$form_state) {
-  $importer = new $form['class']['#value'];
-  if (method_exists($importer, 'config_form_validate')) {
-    $importer->config_form_validate($form, $form_state);
-  }
-}
-
-/**
- * Wrapper function - execute submission handler for configuration form.
- */
-function rooms_channel_manager_config_form_submit($form, &$form_state) {
-  $importer = new $form['class']['#value'];
-  if (method_exists($importer, 'config_form_submit')) {
-    $importer->config_form_submit($form, $form_state);
-  }
-}
-
-/**
  * Implements hook_cron()
  */
 function rooms_channel_manager_cron() {
@@ -89,6 +73,52 @@ function rooms_channel_manager_cron_queue_info() {
     'time' => 60,
   );
   return $queues;
+}
+
+/**
+ * Implements hook_mail.
+ */
+function rooms_channel_manager_mail($key, &$message, $params) {
+  $options = array(
+    'langcode' => $message['language']->language,
+  );
+
+  switch ($key) {
+    case 'booking_conflict_detected':
+      $message['subject'] = t('Booking conflict detected for @site-name!', array('@site-name' => variable_get('site_name', 'Drupal')), $options);
+      $message['body'][] = t('A conflict was detected when attempting to import the following booking from @source', array('@source' => $params['source']), $options);
+      $message['body'][] = t('Summary: ') . check_plain($params['summary']);
+      $message['body'][] = t('Booking dates: ') . check_plain($params['booking_dates']);
+      if (isset($params['link'])) {
+        $message['body'][] = t('External link: ') . check_plain($params['link']);
+      }
+      break;
+  }
+}
+
+
+/**
+ * Custom functionality.
+ */
+
+/**
+ * Wrapper function - execute validation handler for configuration form.
+ */
+function rooms_channel_manager_config_form_validate($form, &$form_state) {
+  $importer = new $form['class']['#value'];
+  if (method_exists($importer, 'config_form_validate')) {
+    $importer->config_form_validate($form, $form_state);
+  }
+}
+
+/**
+ * Wrapper function - execute submission handler for configuration form.
+ */
+function rooms_channel_manager_config_form_submit($form, &$form_state) {
+  $importer = new $form['class']['#value'];
+  if (method_exists($importer, 'config_form_submit')) {
+    $importer->config_form_submit($form, $form_state);
+  }
 }
 
 /**

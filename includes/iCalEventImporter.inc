@@ -6,6 +6,8 @@
 
 class iCalEventImporter extends EventImporter {
 
+  protected $source_name = 'iCal';
+
   /**
    * Fetch events from a remote iCal URL.
    */

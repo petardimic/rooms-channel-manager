@@ -8,9 +8,11 @@ class EventImporter {
 
   // Holds the actual configuration information.
   public $config;
+  protected $source_name = '';
 
   public function __construct() {
     $this->config = new StdClass;
+    $this->config->source_name = '';
   }
 
   public function save() {
@@ -88,6 +90,12 @@ class EventImporter {
    */
   public function importBookings($events) {
 
+    $unit = rooms_unit_load($this->config->unit_id);
+    $unit_email = variable_get('site_mail', '');
+    if ($unit->uid) {
+      $account = user_load($unit->uid);
+      $unit_email = $account->mail;
+    }
     // Get this unit's availability calendar.
     $uc = new UnitCalendar($this->config->unit_id);
 
@@ -113,8 +121,16 @@ class EventImporter {
         $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
         $state_diff_confirmed = array_diff($states_confirmed, $valid_states);
         if (count($state_diff_confirmed) > 0) { // A conflicting confirmed booking was found.
-          // @TODO: send an email.
-          drupal_set_message('we got a problem yall');
+          // @TODO: conflict resolution interface.
+          if (!empty($unit_email)) {
+            $params = array(
+              'booking_dates' => $event['startDate'] . ' - ' . $event['endDate'],
+              'summary' => $event['summary'],
+              'source' => $this->source_name,
+              'link' => $this->getBookingLink($event),
+            );
+            drupal_mail('rooms_channel_manager', 'booking_conflict_detected', $unit_email, language_default(), $params, 'demo@demo.com', TRUE);
+          }
           continue;
         }
 
@@ -130,8 +146,6 @@ class EventImporter {
         $profile_wrapper = entity_metadata_wrapper('commerce_customer_profile', $profile);
         $profile_wrapper->commerce_customer_address->name_line = $name;
         commerce_customer_profile_save($profile);
-
-        $unit = rooms_unit_load($this->config->unit_id);
 
         // Create booking.
         $booking = rooms_booking_create(array('unit_id' => $this->config->unit_id,
