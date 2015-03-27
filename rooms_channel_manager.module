@@ -83,10 +83,20 @@ function rooms_channel_manager_mail($key, &$message, $params) {
     'langcode' => $message['language']->language,
   );
 
+  $message['subject'] = t('Booking conflict detected for @site-name!', array('@site-name' => variable_get('site_name', 'Drupal')), $options);
+  $message['body'][] = t('A conflict was detected when attempting to import the following booking from @source', array('@source' => $params['source']), $options);
+  $message['body'][] = t('Summary: ') . check_plain($params['summary']);
+  $message['body'][] = t('Booking dates: ') . check_plain($params['booking_dates']);
+  if (isset($params['link'])) {
+    $message['body'][] = t('External link: ') . check_plain($params['link']);
+  }
+
   switch ($key) {
     case 'booking_conflict_detected':
-      $message['subject'] = t('Booking conflict detected for @site-name!', array('@site-name' => variable_get('site_name', 'Drupal')), $options);
-      $message['body'][] = t('A conflict was detected when attempting to import the following booking from @source', array('@source' => $params['source']), $options);
+      break;
+    case 'booking_unconfirmed_conflict_detected':
+      $message['body'] = array();
+      $message['body'][] = t('A conflict with an unconfirmed event was detected when attempting to import the following booking from @source', array('@source' => $params['source']), $options);
       $message['body'][] = t('Summary: ') . check_plain($params['summary']);
       $message['body'][] = t('Booking dates: ') . check_plain($params['booking_dates']);
       if (isset($params['link'])) {

@@ -119,6 +119,8 @@ class EventImporter {
         $adjusted_end_date->modify('-1 day');
         $states_confirmed = $uc->getStates($start_date, $adjusted_end_date);
         $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
+        $valid_states = array_merge($valid_states, array(ROOMS_UNCONFIRMED_BOOKINGS));
+
         $state_diff_confirmed = array_diff($states_confirmed, $valid_states);
         if (count($state_diff_confirmed) > 0) { // A conflicting confirmed booking was found.
           // @TODO: conflict resolution interface.
@@ -133,6 +135,23 @@ class EventImporter {
           }
           continue;
         }
+
+        // Check if this booking overlaps with an unconfirmed booking.
+        $states_unconfirmed = $uc->getStates($start_date, $adjusted_end_date, TRUE);
+        $valid_states = array_keys(array_filter(variable_get('rooms_valid_availability_states', drupal_map_assoc(array(ROOMS_AVAILABLE, ROOMS_ON_REQUEST)))));
+        $state_diff_unconfirmed = array_diff($states_unconfirmed, $valid_states);
+        if (count($state_diff_unconfirmed) > 0) {
+          if (!empty($unit_email)) {
+            $params = array(
+              'booking_dates' => $event['startDate'] . ' - ' . $event['endDate'],
+              'summary' => $event['summary'],
+              'source' => $this->source_name,
+              'link' => $this->getBookingLink($event),
+            );
+            drupal_mail('rooms_channel_manager', 'booking_unconfirmed_conflict_detected', $unit_email, language_default(), $params, 'demo@demo.com', TRUE);
+          }
+        }
+
 
         // Make a user ID for this customer.
         $account = new StdClass();
