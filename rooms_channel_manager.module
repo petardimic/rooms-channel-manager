@@ -106,6 +106,22 @@ function rooms_channel_manager_mail($key, &$message, $params) {
   }
 }
 
+/**
+ * Implements hook_form_FORMID_alter()
+ *
+ * Add information to external booking form.
+ */
+function rooms_channel_manager_form_rooms_booking_edit_form_alter(&$form, &$form_state) {
+  if ($form['#entity']->type == 'external_booking') {
+    $data = unserialize($form['#entity']->data);
+    if (isset($data['service'])) {
+      $form['source'] = array(
+        '#weight' => -23,
+        '#markup' => '<strong>' . t('External booking source: ') . '</strong>' . $data['service'],
+      );
+    }
+  }
+}
 
 /**
  * Custom functionality.
