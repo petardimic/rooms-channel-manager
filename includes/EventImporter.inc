@@ -39,6 +39,26 @@ class EventImporter {
     }
   }
 
+  /**
+   * Provides base configuration form.
+   */
+  public function config_form() {
+    $form['confirm_bookings'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Import bookings as confirmed'),
+      '#description' => t('Enter an iCal URL - availability will be synced from this calendar.'),
+      '#default_value' => isset($this->config->confirm_bookings) ? $this->config->confirm_bookings : '',
+    );
+
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#weight' => 99,
+      '#value' => t('Save changes'),
+    );
+
+    return $form;
+  }
+
 
   /**
    * Determine if we can/should fetch updates from the remote source. The
@@ -178,6 +198,7 @@ class EventImporter {
         $booking->name = $name;
         $booking->title = $event['summary'];
         $booking->status = 1;
+        $booking->booking_status = $this->config->confirm_bookings;
         $booking->data = serialize(array('service' => 'Airbnb'));
         rooms_booking_save($booking);
       }

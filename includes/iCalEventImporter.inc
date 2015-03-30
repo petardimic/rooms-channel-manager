@@ -66,12 +66,13 @@ class iCalEventImporter extends EventImporter {
   }
 
   public function config_form() {
+    $form = parent::config_form();
+
     $form['ical_url'] = array(
       '#type' => 'textfield',
       '#title' => t('iCal URL'),
       '#description' => t('Enter an iCal URL - availability will be synced from this calendar.'),
       '#default_value' => isset($this->config->url) ? $this->config->url : '',
-      // FIXME: need a bit better data model than this!
     );
 
     if ($unit = menu_get_object('rooms_unit', 4)) {
@@ -80,11 +81,6 @@ class iCalEventImporter extends EventImporter {
         '#value' => $unit->unit_id,
       );
     }
-
-    $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Save changes'),
-    );
 
     return $form;
   }
@@ -102,6 +98,7 @@ class iCalEventImporter extends EventImporter {
     $this->load();
     if (isset($form_state['values']['unit_id'])) {
       $this->config->unit_id = $form_state['values']['unit_id'];
+      $this->config->confirm_bookings = $form_state['values']['confirm_bookings'];
       $this->config->url = $form_state['values']['ical_url'];
       $this->save();
     }
