@@ -18,7 +18,7 @@ class AirBnbEventImporter extends iCalEventImporter {
    */
   public function config_form() {
     $form = parent::config_form();
-    $form['ical_url']['#title'] = t('Airbnb iCal link');
+    $form[$this->source_name]['ical_url']['#title'] = t('Airbnb iCal link');
     return $form;
   }
 

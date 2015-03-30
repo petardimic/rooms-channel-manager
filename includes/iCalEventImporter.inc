@@ -68,7 +68,7 @@ class iCalEventImporter extends EventImporter {
   public function config_form() {
     $form = parent::config_form();
 
-    $form['ical_url'] = array(
+    $form[$this->source_name]['ical_url'] = array(
       '#type' => 'textfield',
       '#title' => t('iCal URL'),
       '#description' => t('Enter an iCal URL - availability will be synced from this calendar.'),
@@ -76,7 +76,7 @@ class iCalEventImporter extends EventImporter {
     );
 
     if ($unit = menu_get_object('rooms_unit', 4)) {
-      $form['unit_id'] = array(
+      $form[$this->source_name]['unit_id'] = array(
         '#type' => 'hidden',
         '#value' => $unit->unit_id,
       );

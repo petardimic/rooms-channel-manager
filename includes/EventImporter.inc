@@ -43,14 +43,20 @@ class EventImporter {
    * Provides base configuration form.
    */
   public function config_form() {
-    $form['confirm_bookings'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Import bookings as confirmed'),
-      '#description' => t('Enter an iCal URL - availability will be synced from this calendar.'),
-      '#default_value' => isset($this->config->confirm_bookings) ? $this->config->confirm_bookings : '',
+    $form[$this->source_name] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Channel management for the %source source.', array('%source' => $this->source_name)),
     );
 
-    $form['submit'] = array(
+    $form[$this->source_name]['confirm_bookings'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Import bookings as confirmed'),
+      '#description' => t('If this box is ticked, imported bookings from this source will be confirmed.'),
+      '#default_value' => isset($this->config->confirm_bookings) ? $this->config->confirm_bookings : '',
+      '#weight' => 98,
+    );
+
+    $form[$this->source_name]['submit'] = array(
       '#type' => 'submit',
       '#weight' => 99,
       '#value' => t('Save changes'),
