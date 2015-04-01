@@ -14,6 +14,7 @@
 function rooms_channel_manager_menu() {
   $items = array();
 
+  // Channel management tab for units.
   $items['admin/rooms/units/unit/%rooms_unit/channel-management'] = array(
     'title' => 'Channel Management',
     'page callback' => 'rooms_channel_manager_admin',
@@ -22,6 +23,20 @@ function rooms_channel_manager_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => '20',
   );
+
+  // Callback for exporter endpoints.
+  foreach (module_invoke_all('rooms_channel_export') as $export) {
+    $exporter = new $export['handler']['class'];
+    if (method_exists($export['handler']['class'], 'export_availability')) {
+      $items['rooms/availability/' . $export['handler']['module'] . '/%rooms_unit/availability/%'] = array(
+        'title' => 'Channel Management',
+        'page callback' => $export['handler']['class'] . '::' . 'export_availability',
+        'page arguments' => array(2, 3, 5),
+        'access callback' => TRUE,
+        'type' => MENU_CALLBACK,
+      );
+    }
+  }
 
   return $items;
 }
@@ -36,44 +51,6 @@ function hook_permission() {
       'description' => t('Administer Channel management tasks.'),
     ),
   );
-}
-
-/**
- * Implements hook_page_alter().
- *
- * Add channel management forms to unit availability management page.
- */
-function rooms_channel_manager_admin($unit) {
-  $forms = array();
-
-  // If this is a rooms unit, load unit source forms.
-  if (is_object($unit)) {
-
-    // Get enabled availability sources.
-    foreach (module_invoke_all('rooms_channel_source') as $source) {
-      $importer = new $source['handler']['class'];
-      $importer->config->unit_id = $unit->unit_id;
-      $importer->load();
-
-      $form = $importer->config_form();
-      $form['class'] = array(
-        '#type' => 'hidden',
-        '#value' => $source['handler']['class'],
-      );
-      $form_id = $source['handler']['class'] . '_config_form';
-      $form_state = form_state_defaults();
-      if (!isset($form_state['input'])) {
-        $form_state['input'] = $form_state['method'] == 'get' ? $_GET : $_POST;
-      }
-      $form_state['validate_handlers'] = array('rooms_channel_manager_config_form_validate');
-      $form_state['submit_handlers'] = array('rooms_channel_manager_config_form_submit');
-      drupal_prepare_form($form_id, $form, $form_state);
-      drupal_process_form($form_id, $form, $form_state);
-      $forms[] = $form;
-    }
-  }
-
-  return $forms;
 }
 
 /**
@@ -137,7 +114,7 @@ function rooms_channel_manager_mail($key, &$message, $params) {
  * Add information to external booking form.
  */
 function rooms_channel_manager_form_rooms_booking_edit_form_alter(&$form, &$form_state) {
-  if ($form['#entity']->type == 'external_booking') {
+  if (isset($form['#entity']) && $form['#entity']->type == 'external_booking') {
     $data = unserialize($form['#entity']->data);
     if (isset($data['service'])) {
       $form['source'] = array(
@@ -148,9 +125,69 @@ function rooms_channel_manager_form_rooms_booking_edit_form_alter(&$form, &$form
   }
 }
 
+
 /**
  * Custom functionality.
  */
+
+/**
+ * Channel management forms for unit channel management tab.
+ */
+function rooms_channel_manager_admin($unit) {
+  $forms = array();
+
+  // If this is a rooms unit, load unit source forms.
+  if (is_object($unit)) {
+
+    // Get enabled exporters.
+    foreach (module_invoke_all('rooms_channel_export') as $export) {
+      $exporter = new $export['handler']['class'];
+      $exporter->config->unit_id = $unit->unit_id;
+      $exporter->load();
+
+      $form = $exporter->config_form();
+      $form['class'] = array(
+        '#type' => 'hidden',
+        '#value' => $export['handler']['class'],
+      );
+      $form_id = $export['handler']['class'] . '_config_form';
+      $form_state = form_state_defaults();
+      if (!isset($form_state['input'])) {
+        $form_state['input'] = $form_state['method'] == 'get' ? $_GET : $_POST;
+      }
+      $form_state['validate_handlers'] = array('rooms_channel_manager_config_form_validate');
+      $form_state['submit_handlers'] = array('rooms_channel_manager_config_form_submit');
+      drupal_prepare_form($form_id, $form, $form_state);
+      drupal_process_form($form_id, $form, $form_state);
+      $forms[] = $form;
+    }
+
+    // Get enabled availability sources.
+    foreach (module_invoke_all('rooms_channel_source') as $source) {
+      $importer = new $source['handler']['class'];
+      $importer->config->unit_id = $unit->unit_id;
+      $importer->load();
+
+      $form = $importer->config_form();
+      $form['class'] = array(
+        '#type' => 'hidden',
+        '#value' => $source['handler']['class'],
+      );
+      $form_id = $source['handler']['class'] . '_config_form';
+      $form_state = form_state_defaults();
+      if (!isset($form_state['input'])) {
+        $form_state['input'] = $form_state['method'] == 'get' ? $_GET : $_POST;
+      }
+      $form_state['validate_handlers'] = array('rooms_channel_manager_config_form_validate');
+      $form_state['submit_handlers'] = array('rooms_channel_manager_config_form_submit');
+      drupal_prepare_form($form_id, $form, $form_state);
+      drupal_process_form($form_id, $form, $form_state);
+      $forms[] = $form;
+    }
+  }
+
+  return $forms;
+}
 
 /**
  * Wrapper function - execute validation handler for configuration forms in

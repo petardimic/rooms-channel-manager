@@ -8,3 +8,4 @@ package = Rooms
 dependencies[] = rooms_channel_manager
 
 files[] = includes/AirBnbEventImporter.inc
+files[] = includes/AirBnbEventExporter.inc

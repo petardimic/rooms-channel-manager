@@ -38,7 +38,6 @@ function rooms_channel_manager_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
         'description' => 'Primary source ID field for the table. Not used for anything except internal lookups.',
-        // 'no export' => TRUE, // Do not export database-only keys.
       ),
       'unit_id' => array(
         'description' => 'Bookable Unit Identifier.',
@@ -54,7 +53,7 @@ function rooms_channel_manager_schema() {
       'config' => array(
         'type' => 'text',
         'size' => 'big',
-        'description' => 'My exportable configuration data.',
+        'description' => 'Configuration data.',
       ),
       'last_updated' => array(
         'description' => 'The Unix timestamp when the source was last checked.',
@@ -68,5 +67,44 @@ function rooms_channel_manager_schema() {
       'unit_id_module' => array('unit_id', 'module'),
     ),
   );
+
+  $schema['rooms_channel_manager_export'] = array(
+    'description' => t('Table storing channel manager export configurations'),
+    'fields' => array(
+      'sid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary export ID field for the table. Not used for anything except internal lookups.',
+      ),
+      'unit_id' => array(
+        'description' => 'Bookable Unit Identifier.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'module' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'description' => 'Module providing this export.',
+      ),
+      'config' => array(
+        'type' => 'text',
+        'size' => 'big',
+        'description' => 'Configuration data.',
+      ),
+      'last_generated' => array(
+        'description' => 'The Unix timestamp when the export was last generated.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('sid'),
+    'unique keys' => array(
+      'unit_id_module' => array('unit_id', 'module'),
+    ),
+  );
+
   return $schema;
 }
