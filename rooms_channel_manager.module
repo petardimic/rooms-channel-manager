@@ -164,24 +164,41 @@ function rooms_channel_manager_admin($unit) {
 
     // Get enabled availability sources.
     foreach (module_invoke_all('rooms_channel_source') as $source) {
+
+      // Load this importer's class.
       $importer = new $source['handler']['class'];
+
+      // Set the Rooms unit ID and load its specific configuration.
       $importer->config->unit_id = $unit->unit_id;
       $importer->load();
 
+      // Get the importer's form array.
       $form = $importer->config_form();
+
+      // Add a hidden form element with the class name, for use in validation/submission.
       $form['class'] = array(
         '#type' => 'hidden',
         '#value' => $source['handler']['class'],
       );
+
+      // Define a form ID.
       $form_id = $source['handler']['class'] . '_config_form';
+
+      // Do the setup Drupal requires when not using drupal_get_form().
       $form_state = form_state_defaults();
       if (!isset($form_state['input'])) {
         $form_state['input'] = $form_state['method'] == 'get' ? $_GET : $_POST;
       }
+
+      // Explicitly set the validation and submission handlers to our global
+      // functions.
       $form_state['validate_handlers'] = array('rooms_channel_manager_config_form_validate');
       $form_state['submit_handlers'] = array('rooms_channel_manager_config_form_submit');
+
+      // Go through the FAPI preparation and processing stages.
       drupal_prepare_form($form_id, $form, $form_state);
       drupal_process_form($form_id, $form, $form_state);
+
       $forms[] = $form;
     }
   }
