@@ -14,7 +14,7 @@ class AirBnbEventImporter extends iCalEventImporter {
   }
 
   /**
-   * Override config form form Airbnb-specific configuration.
+   * Override config form with Airbnb-specific configuration.
    */
   public function config_form() {
     $form = parent::config_form();

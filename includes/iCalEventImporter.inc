@@ -94,6 +94,9 @@ class iCalEventImporter extends EventImporter {
     }
   }
 
+  /**
+   * Save iCal import configuration settings.
+   */
   public function config_form_submit($form, &$form_state) {
     $this->load();
     if (isset($form_state['values']['unit_id'])) {
