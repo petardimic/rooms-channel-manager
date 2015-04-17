@@ -20,7 +20,15 @@ class iCalEventExporter extends EventExporter {
   public function config_form() {
     if ($unit = menu_get_object('rooms_unit', 4)) {
       $this->config->unit_id = $unit->unit_id;
+
+      // Generate a UUID for this source so that the URI can not be guessed.
+      if (!isset($this->config->uuid)) {
+        $this->load();
+        $this->config->uuid = uuid_generate();
+        $this->save();
+      }
     }
+
     $this->load();
     $form = parent::config_form();
 
@@ -65,12 +73,6 @@ class iCalEventExporter extends EventExporter {
       $this->config->unit_id = $form_state['values']['unit_id'];
       $this->load();
       $this->config->states = $form_state['values']['states'];
-
-      if (!isset($this->config->uuid)) {
-        $this->config->uuid = uuid_generate();
-      }
-
-      // Generate a UUID for this source so that the URI can not be guessed.
       $this->save();
     }
   }
