@@ -49,9 +49,10 @@ class iCalEventExporter extends EventExporter {
     }
 
     if (isset($this->config->uuid) && strlen($this->config->uuid)) {
+      $ics_link = url('rooms/availability/' . $this->config->module . '/' . $this->config->unit_id . '/availability/' . $this->config->uuid, array('absolute' => TRUE));
       $form[$this->export_type]['export_link'] = array(
         '#markup' => '<div class="ical-export-link"><h3>iCal export link</h3>' .
-                     url('rooms/availability/' . $this->config->module . '/' . $this->config->unit_id . '/availability/' . $this->config->uuid, array('absolute' => TRUE)) .
+                     $ics_link . ' (<a href="' . $ics_link . '">download ICS file</a>)' .
                      '</div><br />',
       );
     }
