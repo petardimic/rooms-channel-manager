@@ -19,7 +19,8 @@ function rooms_channel_manager_menu() {
     'title' => 'Channel Management',
     'page callback' => 'rooms_channel_manager_admin',
     'page arguments' => array(4),
-    'access arguments' => array('administer rooms channel management'),
+    'access callback' => 'rooms_channel_manager_access',
+    'access arguments' => array(4),
     'type' => MENU_LOCAL_TASK,
     'weight' => '20',
   );
@@ -44,11 +45,15 @@ function rooms_channel_manager_menu() {
 /**
  * Implements hook_permission()
  */
-function hook_permission() {
+function rooms_channel_manager_permission() {
   return array(
     'administer rooms channel management' => array(
       'title' => t('Administer Rooms Channel Management'),
       'description' => t('Administer Channel management tasks.'),
+    ),
+    'administer own rooms_unit channel management' => array(
+      'title' => t('Administer Channel Management for own units'),
+      'description' => t('Administer Channel management tasks on user\'s own units.'),
     ),
   );
 }
@@ -129,6 +134,24 @@ function rooms_channel_manager_form_rooms_booking_edit_form_alter(&$form, &$form
 /**
  * Custom functionality.
  */
+
+/**
+ * Access callback - determine if the logged in user has access to administer
+ * the given unit.
+ */
+function rooms_channel_manager_access($unit) {
+  global $user;
+
+  if (user_access('administer rooms channel management')) {
+    return TRUE;
+  }
+
+  if (entity_access('update', 'rooms_unit', $unit, $user) && user_access('administer own rooms_unit channel management')) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
 
 /**
  * Channel management forms for unit channel management tab.
