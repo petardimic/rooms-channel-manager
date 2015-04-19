@@ -173,7 +173,7 @@ function rooms_channel_manager_admin($unit) {
         '#type' => 'hidden',
         '#value' => $export['handler']['class'],
       );
-      $form_id = $export['handler']['module'] . 'export_config_form';
+      $form_id = $export['handler']['module'] . '_export_config_form';
       $form_state = form_state_defaults();
       if (!isset($form_state['input'])) {
         $form_state['input'] = $form_state['method'] == 'get' ? $_GET : $_POST;
@@ -205,7 +205,7 @@ function rooms_channel_manager_admin($unit) {
       );
 
       // Define a form ID.
-      $form_id = $source['handler']['module'] . 'source_config_form';
+      $form_id = $source['handler']['module'] . '_source_config_form';
 
       // Do the setup Drupal requires when not using drupal_get_form().
       $form_state = form_state_defaults();
