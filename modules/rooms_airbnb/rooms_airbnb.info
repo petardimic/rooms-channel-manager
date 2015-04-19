@@ -6,6 +6,4 @@ version = 1.x-dev
 package = Rooms
 
 dependencies[] = rooms_channel_manager
-
-files[] = includes/AirBnbEventImporter.inc
-files[] = includes/AirBnbEventExporter.inc
+dependencies[] = xautoload (>= 7.x-5.0)

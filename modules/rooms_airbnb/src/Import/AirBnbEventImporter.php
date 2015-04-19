@@ -1,10 +1,13 @@
 <?php
 
 /**
- * iCal Event importer class.
+ * @file
+ * Contains \Drupal\rooms_airbnb\Import\AirBnbEventImporter
  */
 
-class AirBnbEventImporter extends iCalEventImporter {
+namespace Drupal\rooms_airbnb\Import;
+
+class AirBnbEventImporter extends \Drupal\rooms_channel_manager\Import\iCalEventImporter {
 
   protected $source_name = 'Airbnb';
 

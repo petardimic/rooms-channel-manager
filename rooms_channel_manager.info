@@ -5,14 +5,10 @@ version = 1.x-dev
 
 package = Rooms
 
+dependencies[] = composer_manager
 dependencies[] = date
 dependencies[] = rooms_availability
 dependencies[] = rooms_booking
 dependencies[] = rooms_unit
 dependencies[] = uuid
-
-files[] = plugins/iCalcreator/iCalcreator.class.php
-files[] = includes/EventImporter.inc
-files[] = includes/iCalEventImporter.inc
-files[] = includes/EventExporter.inc
-files[] = includes/iCalEventExporter.inc
+dependencies[] = xautoload (>= 7.x-5.0)

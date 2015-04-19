@@ -28,7 +28,7 @@ function rooms_channel_manager_menu() {
   // Callback for exporter endpoints.
   foreach (module_invoke_all('rooms_channel_export') as $export) {
     $exporter = new $export['handler']['class'];
-    if (method_exists($export['handler']['class'], 'export_availability')) {
+    if (method_exists($exporter, 'export_availability')) {
       $items['rooms/availability/' . $export['handler']['module'] . '/%rooms_unit/availability/%'] = array(
         'title' => 'Channel Management',
         'page callback' => $export['handler']['class'] . '::' . 'export_availability',
@@ -173,7 +173,7 @@ function rooms_channel_manager_admin($unit) {
         '#type' => 'hidden',
         '#value' => $export['handler']['class'],
       );
-      $form_id = $export['handler']['class'] . '_config_form';
+      $form_id = $export['handler']['module'] . 'export_config_form';
       $form_state = form_state_defaults();
       if (!isset($form_state['input'])) {
         $form_state['input'] = $form_state['method'] == 'get' ? $_GET : $_POST;
@@ -205,7 +205,7 @@ function rooms_channel_manager_admin($unit) {
       );
 
       // Define a form ID.
-      $form_id = $source['handler']['class'] . '_config_form';
+      $form_id = $source['handler']['module'] . 'source_config_form';
 
       // Do the setup Drupal requires when not using drupal_get_form().
       $form_state = form_state_defaults();

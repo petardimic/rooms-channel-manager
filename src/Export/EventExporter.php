@@ -1,13 +1,17 @@
 <?php
 
 /**
- * Defines EventImporter base class.
+ * @file
+ * Contains \Drupal\rooms_channel_manager\Export\EventExporter
  */
 
-class EventExporter {
+namespace Drupal\rooms_channel_manager\Export;
+
+abstract class EventExporter implements EventExporterInterface {
 
   // Holds the actual configuration information.
   public $config;
+  protected $source_name = '';
 
   public function __construct() {
     $this->config = new StdClass;

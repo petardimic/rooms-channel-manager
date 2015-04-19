@@ -11,8 +11,7 @@ function rooms_airbnb_rooms_channel_source() {
     'description' => 'Imports AirBnB availability feeds.',
     'handler' => array(
       'parent' => 'iCalEventImporter',
-      'class' => 'AirBnbEventImporter',
-      'file' => 'includes/AirBnbEventImporter.inc',
+      'class' => '\Drupal\rooms_airbnb\Import\AirBnbEventImporter',
       'path' => drupal_get_path('module', 'rooms_airbnb'),
       'module' => 'rooms_airbnb',
     ),
@@ -27,8 +26,7 @@ function rooms_airbnb_rooms_channel_export() {
     'description' => 'Exports availability to AirBnB.',
     'handler' => array(
       'parent' => 'iCalEventExporter',
-      'class' => 'AirBnbEventExporter',
-      'file' => 'includes/AirBnbEventExporter.inc',
+      'class' => '\Drupal\rooms_airbnb\Export\AirBnbEventExporter',
       'path' => drupal_get_path('module', 'rooms_airbnb'),
       'module' => 'rooms_airbnb',
     ),

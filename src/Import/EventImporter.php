@@ -1,17 +1,27 @@
 <?php
 
 /**
- * Defines EventImporter base class.
+ * @file
+ * Contains \Drupal\rooms_channel_manager\Import\EventImporter
  */
 
-class EventImporter {
+namespace Drupal\rooms_channel_manager\Import;
+
+abstract class EventImporter implements EventImporterInterface {
 
   // Holds the actual configuration information.
   public $config;
   protected $source_name = '';
 
+  /**
+   * Fetch Events to import.
+   *
+   * @return array events
+   */
+  abstract public function fetch();
+
   public function __construct() {
-    $this->config = new StdClass;
+    $this->config = new \StdClass;
     $this->config->source_name = '';
   }
 
@@ -98,13 +108,6 @@ class EventImporter {
   }
 
   /**
-   * Fetch Events to import.
-   *
-   * @return array events
-   */
-  public function fetch() {}
-
-  /**
    * Find customer name for an event.
    */
   public function getCustomerName($event) {
@@ -123,7 +126,7 @@ class EventImporter {
       $unit_email = $account->mail;
     }
     // Get this unit's availability calendar.
-    $uc = new UnitCalendar($this->config->unit_id);
+    $uc = new \UnitCalendar($this->config->unit_id);
 
     // Import external events.
     foreach ($events as $event) {
@@ -139,8 +142,8 @@ class EventImporter {
         }
 
         // Check if a locked event is blocking the update.
-        $start_date = DateTime::createFromFormat('Y-m-d', $event['startDate']);
-        $end_date = DateTime::createFromFormat('Y-m-d', $event['endDate']);
+        $start_date = \DateTime::createFromFormat('Y-m-d', $event['startDate']);
+        $end_date = \DateTime::createFromFormat('Y-m-d', $event['endDate']);
         $adjusted_end_date = clone($end_date);
         $adjusted_end_date->modify('-1 day');
         $states_confirmed = $uc->getStates($start_date, $adjusted_end_date);
@@ -180,7 +183,7 @@ class EventImporter {
 
 
         // Make a user ID for this customer.
-        $account = new StdClass();
+        $account = new \StdClass();
         $account->name = rooms_channel_manager_unique_username($name);
         $account->pass = user_password(20);
         $account->status = 1;
@@ -210,9 +213,9 @@ class EventImporter {
       }
       else {
         $event_id = ROOMS_NOT_AVAILABLE;
-        $startDateTime = DateTime::createFromFormat('Y-m-d', $event['startDate']);
-        $endDateTime = DateTime::createFromFormat('Y-m-d', $event['endDate']);
-        $be = new BookingEvent($this->config->unit_id, $event_id, $startDateTime, $endDateTime);
+        $startDateTime = \DateTime::createFromFormat('Y-m-d', $event['startDate']);
+        $endDateTime = \DateTime::createFromFormat('Y-m-d', $event['endDate']);
+        $be = new \BookingEvent($this->config->unit_id, $event_id, $startDateTime, $endDateTime);
         $events = array($be);
         $response = $uc->updateCalendar($events);
         if ($response[$event_id] == ROOMS_BLOCKED) {
