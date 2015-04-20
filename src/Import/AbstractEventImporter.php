@@ -108,13 +108,6 @@ abstract class AbstractEventImporter implements EventImporterInterface {
   }
 
   /**
-   * Find customer name for an event.
-   */
-  public function getCustomerName($event) {
-    return '';
-  }
-
-  /**
    * Add remote bookings.
    */
   public function importBookings($events) {
@@ -226,6 +219,13 @@ abstract class AbstractEventImporter implements EventImporterInterface {
         }
       }
     }
+  }
+
+  /**
+   * Find customer name for an event.
+   */
+  public function getCustomerName($event) {
+    return '';
   }
 
 }
