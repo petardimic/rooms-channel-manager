@@ -25,7 +25,7 @@ abstract class AbstractEventImporter implements EventImporterInterface {
     $this->config->source_name = '';
   }
 
-  public function save() {
+  public function setConfig() {
     $object = array(
       'unit_id' => $this->config->unit_id,
       'module' => $this->config->module,
@@ -39,7 +39,7 @@ abstract class AbstractEventImporter implements EventImporterInterface {
     }
   }
 
-  public function load() {
+  public function getConfig() {
     if (isset($this->config->unit_id)) {
       if ($record = db_query("SELECT config FROM {rooms_channel_manager_sources} WHERE unit_id = :unit_id AND module = :module", array(':unit_id' => $this->config->unit_id, ':module' => $this->config->module))->fetchObject()) {
         if (isset($record->config)) {

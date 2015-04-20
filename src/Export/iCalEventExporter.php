@@ -26,13 +26,13 @@ class iCalEventExporter extends AbstractEventExporter {
 
       // Generate a UUID for this source so that the URI can not be guessed.
       if (!isset($this->config->uuid)) {
-        $this->load();
+        $this->getConfig();
         $this->config->uuid = uuid_generate();
-        $this->save();
+        $this->setConfig();
       }
     }
 
-    $this->load();
+    $this->getConfig();
     $form = parent::config_form();
 
     $state_options = array(
@@ -74,9 +74,9 @@ class iCalEventExporter extends AbstractEventExporter {
   public function config_form_submit($form, &$form_state) {
     if (isset($form_state['values']['unit_id'])) {
       $this->config->unit_id = $form_state['values']['unit_id'];
-      $this->load();
+      $this->getConfig();
       $this->config->states = $form_state['values']['states'];
-      $this->save();
+      $this->setConfig();
     }
   }
 
@@ -92,7 +92,7 @@ class iCalEventExporter extends AbstractEventExporter {
     // As this is a static method, we must instantiate an object to work with.
     $object = new $info['handler']['class'];
     $object->config->unit_id = $unit->unit_id;
-    $object->load();
+    $object->getConfig();
 
     // Check if the uuid matches, and throw a 404 if not.
     if ($object->config->uuid != $uuid) {
@@ -117,7 +117,7 @@ class iCalEventExporter extends AbstractEventExporter {
    * Generate the iCal data.
    */
   public function generate_ics(\RoomsUnit $unit, $states, $start, $end) {
-    $this->load();
+    $this->getConfig();
 
     $vcalendar = new \Eluceo\iCal\Component\Calendar($GLOBALS['base_url']);
     $vcalendar->setMethod("PUBLISH");

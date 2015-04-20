@@ -100,12 +100,12 @@ class iCalEventImporter extends AbstractEventImporter {
    * Save iCal import configuration settings.
    */
   public function config_form_submit($form, &$form_state) {
-    $this->load();
+    $this->getConfig();
     if (isset($form_state['values']['unit_id'])) {
       $this->config->unit_id = $form_state['values']['unit_id'];
       $this->config->confirm_bookings = $form_state['values']['confirm_bookings'];
       $this->config->url = $form_state['values']['ical_url'];
-      $this->save();
+      $this->setConfig();
     }
   }
 

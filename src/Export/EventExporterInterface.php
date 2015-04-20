@@ -9,8 +9,8 @@ namespace Drupal\rooms_channel_manager\Export;
 
 interface EventExporterInterface {
 
-  public function save();
-  public function load();
+  public function setConfig();
+  public function getConfig();
   public function config_form();
 
 }

@@ -166,7 +166,7 @@ function rooms_channel_manager_admin($unit) {
     foreach (module_invoke_all('rooms_channel_export') as $export) {
       $exporter = new $export['handler']['class'];
       $exporter->config->unit_id = $unit->unit_id;
-      $exporter->load();
+      $exporter->getConfig();
 
       $form = $exporter->config_form();
       $form['class'] = array(
@@ -193,7 +193,7 @@ function rooms_channel_manager_admin($unit) {
 
       // Set the Rooms unit ID and load its specific configuration.
       $importer->config->unit_id = $unit->unit_id;
-      $importer->load();
+      $importer->getConfig();
 
       // Get the importer's form array.
       $form = $importer->config_form();
@@ -258,7 +258,7 @@ function rooms_channel_manager_update_availability($data) {
   if (isset($data['class'])) {
     $importer = new $data['class'];
     $importer->config->unit_id = $data['unit_id'];
-    $importer->load();
+    $importer->getConfig();
     if ($importer->updateNeeded()) {
       $importer->importBookingsFromSource();
     }
