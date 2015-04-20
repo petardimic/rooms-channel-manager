@@ -7,7 +7,7 @@
 
 namespace Drupal\rooms_channel_manager\Export;
 
-class iCalEventExporter extends EventExporter {
+class iCalEventExporter extends AbstractEventExporter {
 
   // Holds the actual configuration information.
   public $config;

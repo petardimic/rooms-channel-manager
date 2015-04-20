@@ -7,7 +7,7 @@
 
 namespace Drupal\rooms_channel_manager\Export;
 
-abstract class EventExporter implements EventExporterInterface {
+abstract class AbstractEventExporter implements EventExporterInterface {
 
   // Holds the actual configuration information.
   public $config;

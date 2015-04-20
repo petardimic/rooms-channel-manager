@@ -7,7 +7,7 @@
 
 namespace Drupal\rooms_channel_manager\Import;
 
-class iCalEventImporter extends EventImporter {
+class iCalEventImporter extends AbstractEventImporter {
 
   protected $source_name = 'iCal';
 

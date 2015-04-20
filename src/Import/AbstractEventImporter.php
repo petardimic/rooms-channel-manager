@@ -7,7 +7,7 @@
 
 namespace Drupal\rooms_channel_manager\Import;
 
-abstract class EventImporter implements EventImporterInterface {
+abstract class AbstractEventImporter implements EventImporterInterface {
 
   // Holds the actual configuration information.
   public $config;
