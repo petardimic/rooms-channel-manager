@@ -11,10 +11,10 @@ interface EventImporterInterface {
 
   public function setConfig();
   public function getConfig();
-  public function config_form();
+  public function loadConfigForm();
   public function updateNeeded();
   public function importBookingsFromSource();
-  public function fetch();
+  public function fetchEvents();
   public function getCustomerName($event);
   public function importBookings($events);
 

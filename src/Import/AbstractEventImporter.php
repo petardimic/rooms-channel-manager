@@ -18,7 +18,7 @@ abstract class AbstractEventImporter implements EventImporterInterface {
    *
    * @return array events
    */
-  abstract public function fetch();
+  abstract public function fetchEvents();
 
   public function __construct() {
     $this->config = new \StdClass;
@@ -52,7 +52,7 @@ abstract class AbstractEventImporter implements EventImporterInterface {
   /**
    * Provides base configuration form.
    */
-  public function config_form() {
+  public function loadConfigForm() {
     $form[$this->source_name] = array(
       '#type' => 'fieldset',
       '#title' => t('Channel management for the %source source.', array('%source' => $this->source_name)),
@@ -95,7 +95,7 @@ abstract class AbstractEventImporter implements EventImporterInterface {
    * Fetch Events from remote source and import bookings.
    */
   public function importBookingsFromSource() {
-    $events = $this->fetch();
+    $events = $this->fetchEvents();
     $this->importBookings($events);
     if (isset($this->config->module) && isset($this->config->unit_id)) {
       $record = array(

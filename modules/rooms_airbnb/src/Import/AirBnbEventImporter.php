@@ -19,8 +19,8 @@ class AirBnbEventImporter extends \Drupal\rooms_channel_manager\Import\iCalEvent
   /**
    * Override config form with Airbnb-specific configuration.
    */
-  public function config_form() {
-    $form = parent::config_form();
+  public function loadConfigForm() {
+    $form = parent::loadConfigForm();
     $form[$this->source_name]['ical_url']['#title'] = t('Airbnb iCal link');
     return $form;
   }
@@ -48,8 +48,8 @@ class AirBnbEventImporter extends \Drupal\rooms_channel_manager\Import\iCalEvent
     return 'https://www.airbnb.com/reservation/itinerary?code=' . $this->getBookingReference($event);
   }
 
-  public function fetch() {
-    $events = parent::fetch();
+  public function fetchEvents() {
+    $events = parent::fetchEvents();
     foreach ($events as &$event) {
 
       // Parse Airbnb's ical format to determine what events are actual bookings.

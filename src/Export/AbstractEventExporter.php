@@ -45,7 +45,7 @@ abstract class AbstractEventExporter implements EventExporterInterface {
   /**
    * Provides base configuration form.
    */
-  public function config_form() {
+  public function loadConfigForm() {
     $form[$this->export_type] = array(
       '#type' => 'fieldset',
       '#title' => t('%type availability export.', array('%type' => $this->export_type)),
@@ -63,7 +63,7 @@ abstract class AbstractEventExporter implements EventExporterInterface {
   /**
    * Return the year and the month of the last event of a specific unit.
    */
-  public function get_last_event() {
+  public function getLastEvent() {
     $this->getConfig();
 
     $result = db_select('rooms_availability', 't')

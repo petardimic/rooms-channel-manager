@@ -20,7 +20,7 @@ class iCalEventExporter extends AbstractEventExporter {
   /**
    * Provides base configuration form.
    */
-  public function config_form() {
+  public function loadConfigForm() {
     if ($unit = menu_get_object('rooms_unit', 4)) {
       $this->config->unit_id = $unit->unit_id;
 
@@ -33,7 +33,7 @@ class iCalEventExporter extends AbstractEventExporter {
     }
 
     $this->getConfig();
-    $form = parent::config_form();
+    $form = parent::loadConfigForm();
 
     $state_options = array(
       '0' => t('Not Available'),
@@ -71,7 +71,7 @@ class iCalEventExporter extends AbstractEventExporter {
     return $form;
   }
 
-  public function config_form_submit($form, &$form_state) {
+  public function configFormSubmit($form, &$form_state) {
     if (isset($form_state['values']['unit_id'])) {
       $this->config->unit_id = $form_state['values']['unit_id'];
       $this->getConfig();
@@ -83,7 +83,7 @@ class iCalEventExporter extends AbstractEventExporter {
   /**
    * Callback for availability export.
    */
-  public static function export_availability($module, $unit, $uuid) {
+  public static function exportAvailability($module, $unit, $uuid) {
 
     // Find the class name for this module.
     $info_callback = $module . '_rooms_channel_export';
@@ -100,7 +100,7 @@ class iCalEventExporter extends AbstractEventExporter {
     }
 
     // Looking for the last event.
-    $last_event = $object->get_last_event($unit);
+    $last_event = $object->getLastEvent($unit);
     $start = date('Y-m-d');
 
     // Setting end date to export 1 month over the last event.
@@ -109,14 +109,14 @@ class iCalEventExporter extends AbstractEventExporter {
     $end = $end->format('Y-m-d');
 
     drupal_add_http_header('Content-Type', 'text/calendar; utf-8');
-    print $object->generate_ics($unit, $object->config->states, $start, $end);
+    print $object->generateIcs($unit, $object->config->states, $start, $end);
     exit(0);
   }
 
   /**
    * Generate the iCal data.
    */
-  public function generate_ics(\RoomsUnit $unit, $states, $start, $end) {
+  public function generateIcs(\RoomsUnit $unit, $states, $start, $end) {
     $this->getConfig();
 
     $vcalendar = new \Eluceo\iCal\Component\Calendar($GLOBALS['base_url']);

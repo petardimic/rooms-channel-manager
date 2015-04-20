@@ -14,7 +14,7 @@ class iCalEventImporter extends AbstractEventImporter {
   /**
    * Fetch events from a remote iCal URL.
    */
-  public function fetch() {
+  public function fetchEvents() {
 
     $headers = array();
     // TODO
@@ -67,8 +67,8 @@ class iCalEventImporter extends AbstractEventImporter {
     return $events;
   }
 
-  public function config_form() {
-    $form = parent::config_form();
+  public function loadConfigForm() {
+    $form = parent::loadConfigForm();
 
     $form[$this->source_name]['ical_url'] = array(
       '#type' => 'textfield',
@@ -87,7 +87,7 @@ class iCalEventImporter extends AbstractEventImporter {
     return $form;
   }
 
-  public function config_form_validate($form, &$form_state) {
+  public function configFormValidate($form, &$form_state) {
     if (empty($form_state['values']['ical_url'])) {
       form_set_error('ical_url', t('Please enter a URL'));
     }
@@ -99,7 +99,7 @@ class iCalEventImporter extends AbstractEventImporter {
   /**
    * Save iCal import configuration settings.
    */
-  public function config_form_submit($form, &$form_state) {
+  public function configFormSubmit($form, &$form_state) {
     $this->getConfig();
     if (isset($form_state['values']['unit_id'])) {
       $this->config->unit_id = $form_state['values']['unit_id'];

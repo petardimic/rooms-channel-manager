@@ -20,8 +20,8 @@ class AirBnbEventExporter extends \Drupal\rooms_channel_manager\Export\iCalEvent
   /**
    * Provides base configuration form.
    */
-  public function config_form() {
-    $form = parent::config_form();
+  public function loadConfigForm() {
+    $form = parent::loadConfigForm();
 
     // FIXME
     return $form;

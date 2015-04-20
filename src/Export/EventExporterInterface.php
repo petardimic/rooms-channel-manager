@@ -11,6 +11,6 @@ interface EventExporterInterface {
 
   public function setConfig();
   public function getConfig();
-  public function config_form();
+  public function loadConfigForm();
 
 }
