@@ -28,10 +28,10 @@ function rooms_channel_manager_menu() {
   // Callback for exporter endpoints.
   foreach (module_invoke_all('rooms_channel_export') as $export) {
     $exporter = new $export['handler']['class'];
-    if (method_exists($export['handler']['class'], 'export_availability')) {
+    if (method_exists($exporter, 'exportAvailability')) {
       $items['rooms/availability/' . $export['handler']['module'] . '/%rooms_unit/availability/%'] = array(
         'title' => 'Channel Management',
-        'page callback' => $export['handler']['class'] . '::' . 'export_availability',
+        'page callback' => $export['handler']['class'] . '::' . 'exportAvailability',
         'page arguments' => array(2, 3, 5),
         'access callback' => TRUE,
         'type' => MENU_CALLBACK,
@@ -166,14 +166,14 @@ function rooms_channel_manager_admin($unit) {
     foreach (module_invoke_all('rooms_channel_export') as $export) {
       $exporter = new $export['handler']['class'];
       $exporter->config->unit_id = $unit->unit_id;
-      $exporter->load();
+      $exporter->getConfig();
 
-      $form = $exporter->config_form();
+      $form = $exporter->loadConfigForm();
       $form['class'] = array(
         '#type' => 'hidden',
         '#value' => $export['handler']['class'],
       );
-      $form_id = $export['handler']['class'] . '_config_form';
+      $form_id = $export['handler']['module'] . '_export_config_form';
       $form_state = form_state_defaults();
       if (!isset($form_state['input'])) {
         $form_state['input'] = $form_state['method'] == 'get' ? $_GET : $_POST;
@@ -193,10 +193,10 @@ function rooms_channel_manager_admin($unit) {
 
       // Set the Rooms unit ID and load its specific configuration.
       $importer->config->unit_id = $unit->unit_id;
-      $importer->load();
+      $importer->getConfig();
 
       // Get the importer's form array.
-      $form = $importer->config_form();
+      $form = $importer->loadConfigForm();
 
       // Add a hidden form element with the class name, for use in validation/submission.
       $form['class'] = array(
@@ -205,7 +205,7 @@ function rooms_channel_manager_admin($unit) {
       );
 
       // Define a form ID.
-      $form_id = $source['handler']['class'] . '_config_form';
+      $form_id = $source['handler']['module'] . '_source_config_form';
 
       // Do the setup Drupal requires when not using drupal_get_form().
       $form_state = form_state_defaults();
@@ -235,8 +235,8 @@ function rooms_channel_manager_admin($unit) {
  */
 function rooms_channel_manager_config_form_validate($form, &$form_state) {
   $importer = new $form['class']['#value'];
-  if (method_exists($importer, 'config_form_validate')) {
-    $importer->config_form_validate($form, $form_state);
+  if (method_exists($importer, 'configFormValidate')) {
+    $importer->configFormValidate($form, $form_state);
   }
 }
 
@@ -246,8 +246,8 @@ function rooms_channel_manager_config_form_validate($form, &$form_state) {
  */
 function rooms_channel_manager_config_form_submit($form, &$form_state) {
   $importer = new $form['class']['#value'];
-  if (method_exists($importer, 'config_form_submit')) {
-    $importer->config_form_submit($form, $form_state);
+  if (method_exists($importer, 'configFormSubmit')) {
+    $importer->configFormSubmit($form, $form_state);
   }
 }
 
@@ -258,7 +258,7 @@ function rooms_channel_manager_update_availability($data) {
   if (isset($data['class'])) {
     $importer = new $data['class'];
     $importer->config->unit_id = $data['unit_id'];
-    $importer->load();
+    $importer->getConfig();
     if ($importer->updateNeeded()) {
       $importer->importBookingsFromSource();
     }

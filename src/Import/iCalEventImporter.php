@@ -1,17 +1,20 @@
 <?php
 
 /**
- * iCal Event importer class.
+ * @file
+ * Contains \Drupal\rooms_channel_manager\Import\iCalEventImporter
  */
 
-class iCalEventImporter extends EventImporter {
+namespace Drupal\rooms_channel_manager\Import;
+
+class iCalEventImporter extends AbstractEventImporter {
 
   protected $source_name = 'iCal';
 
   /**
    * Fetch events from a remote iCal URL.
    */
-  public function fetch() {
+  public function fetchEvents() {
 
     $headers = array();
     // TODO
@@ -22,41 +25,40 @@ class iCalEventImporter extends EventImporter {
     }
 
     $data = $response->data;
+    $lines = explode("\n", $data);
+
     // Parse iCal data.
-    $vcalendar = new vcalendar();
-    $vcalendar->parse($data);
-    $now = $datetime = new DateTime();
+    $ical = new \ICal($lines);
+    $now = $datetime = new \DateTime();
 
     $events = array();
-    while ($vevent = $vcalendar->getComponent('vevent')) {
+    foreach ($ical->events() as $vevent) {
 
       // Get event start date.
-      $dtstart_array = $vevent->getProperty('dtstart', 1, TRUE);
-      $dtstart = $dtstart_array['value'];
-      $startDate = $dtstart['year'] . '-' . sprintf('%02d', $dtstart['month']) . '-' . sprintf('%02d', $dtstart['day']);
-      $startDateTime = DateTime::createFromFormat('Y-m-d', $startDate);
+      $dtstart = $vevent['DTSTART'];
+      $startDateTime = \DateTime::createFromFormat('Ymd', $dtstart);
+      $startDate = $startDateTime->format('Y-m-d');
       if ($startDateTime > $now) {
 
         // This event is in the future.
-        $dtend_array = $vevent->getProperty('dtend', 1, TRUE);
-        $dtend = $dtend_array['value'];
-        $endDate = $dtend['year'] . '-' . sprintf('%02d', $dtend['month']) . '-' . sprintf('%02d', $dtend['day']);
-        $endDateTime = DateTime::createFromFormat('Y-m-d', $endDate);
+        $dtend = $vevent['DTEND'];
+        $endDateTime = \DateTime::createFromFormat('Ymd', $dtend);
+        $endDate = $endDateTime->format('Y-m-d');
 
         // A Rooms booking event expects the end date to be the date before
         // departure.
-        $endDateTime->sub(new DateInterval('P1D'));
+        $endDateTime->sub(new \DateInterval('P1D'));
 
         $description = '';
-        if (!empty($vevent->description)) {
-          $description = $vevent->description[0]['value'];
+        if (!empty($vevent['DESCRIPTION'])) {
+          $description = $vevent['DESCRIPTION'];
         }
 
         $events[] = array(
           'type' => 'booking',
           'startDate' => $startDate,
           'endDate' => $endDate,
-          'summary' => $vevent->summary['value'],
+          'summary' => $vevent['SUMMARY'],
           'description' => $description,
         );
       }
@@ -65,8 +67,8 @@ class iCalEventImporter extends EventImporter {
     return $events;
   }
 
-  public function config_form() {
-    $form = parent::config_form();
+  public function loadConfigForm() {
+    $form = parent::loadConfigForm();
 
     $form[$this->source_name]['ical_url'] = array(
       '#type' => 'textfield',
@@ -85,7 +87,7 @@ class iCalEventImporter extends EventImporter {
     return $form;
   }
 
-  public function config_form_validate($form, &$form_state) {
+  public function configFormValidate($form, &$form_state) {
     if (empty($form_state['values']['ical_url'])) {
       form_set_error('ical_url', t('Please enter a URL'));
     }
@@ -97,13 +99,13 @@ class iCalEventImporter extends EventImporter {
   /**
    * Save iCal import configuration settings.
    */
-  public function config_form_submit($form, &$form_state) {
-    $this->load();
+  public function configFormSubmit($form, &$form_state) {
+    $this->getConfig();
     if (isset($form_state['values']['unit_id'])) {
       $this->config->unit_id = $form_state['values']['unit_id'];
       $this->config->confirm_bookings = $form_state['values']['confirm_bookings'];
       $this->config->url = $form_state['values']['ical_url'];
-      $this->save();
+      $this->setConfig();
     }
   }
 

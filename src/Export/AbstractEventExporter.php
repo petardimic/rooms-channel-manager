@@ -1,20 +1,24 @@
 <?php
 
 /**
- * Defines EventImporter base class.
+ * @file
+ * Contains \Drupal\rooms_channel_manager\Export\EventExporter
  */
 
-class EventExporter {
+namespace Drupal\rooms_channel_manager\Export;
+
+abstract class AbstractEventExporter implements EventExporterInterface {
 
   // Holds the actual configuration information.
   public $config;
+  protected $source_name = '';
 
   public function __construct() {
     $this->config = new StdClass;
     $this->export_type = '';
   }
 
-  public function save() {
+  public function setConfig() {
     $object = array(
       'unit_id' => $this->config->unit_id,
       'module' => $this->config->module,
@@ -28,7 +32,7 @@ class EventExporter {
     }
   }
 
-  public function load() {
+  public function getConfig() {
     if (isset($this->config->unit_id)) {
       if ($record = db_query("SELECT config FROM {rooms_channel_manager_export} WHERE unit_id = :unit_id AND module = :module", array(':unit_id' => $this->config->unit_id, ':module' => $this->config->module))->fetchObject()) {
         if (isset($record->config)) {
@@ -41,7 +45,7 @@ class EventExporter {
   /**
    * Provides base configuration form.
    */
-  public function config_form() {
+  public function loadConfigForm() {
     $form[$this->export_type] = array(
       '#type' => 'fieldset',
       '#title' => t('%type availability export.', array('%type' => $this->export_type)),
@@ -59,8 +63,8 @@ class EventExporter {
   /**
    * Return the year and the month of the last event of a specific unit.
    */
-  public function get_last_event() {
-    $this->load();
+  public function getLastEvent() {
+    $this->getConfig();
 
     $result = db_select('rooms_availability', 't')
       ->fields('t')

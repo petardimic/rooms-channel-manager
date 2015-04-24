@@ -1,10 +1,13 @@
 <?php
 
 /**
- * Defines EventImporter base class.
+ * @file
+ * Contains \Drupal\rooms_airbnb\Export\AirBnbEventExporter
  */
 
-class AirBnbEventExporter extends iCalEventExporter {
+namespace Drupal\rooms_airbnb\Export;
+
+class AirBnbEventExporter extends \Drupal\rooms_channel_manager\Export\iCalEventExporter {
 
   // Holds the actual configuration information.
   public $config;
@@ -17,8 +20,8 @@ class AirBnbEventExporter extends iCalEventExporter {
   /**
    * Provides base configuration form.
    */
-  public function config_form() {
-    $form = parent::config_form();
+  public function loadConfigForm() {
+    $form = parent::loadConfigForm();
 
     // FIXME
     return $form;

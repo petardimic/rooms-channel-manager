@@ -1,21 +1,31 @@
 <?php
 
 /**
- * Defines EventImporter base class.
+ * @file
+ * Contains \Drupal\rooms_channel_manager\Import\EventImporter
  */
 
-class EventImporter {
+namespace Drupal\rooms_channel_manager\Import;
+
+abstract class AbstractEventImporter implements EventImporterInterface {
 
   // Holds the actual configuration information.
   public $config;
   protected $source_name = '';
 
+  /**
+   * Fetch Events to import.
+   *
+   * @return array events
+   */
+  abstract public function fetchEvents();
+
   public function __construct() {
-    $this->config = new StdClass;
+    $this->config = new \StdClass;
     $this->config->source_name = '';
   }
 
-  public function save() {
+  public function setConfig() {
     $object = array(
       'unit_id' => $this->config->unit_id,
       'module' => $this->config->module,
@@ -29,7 +39,7 @@ class EventImporter {
     }
   }
 
-  public function load() {
+  public function getConfig() {
     if (isset($this->config->unit_id)) {
       if ($record = db_query("SELECT config FROM {rooms_channel_manager_sources} WHERE unit_id = :unit_id AND module = :module", array(':unit_id' => $this->config->unit_id, ':module' => $this->config->module))->fetchObject()) {
         if (isset($record->config)) {
@@ -42,7 +52,7 @@ class EventImporter {
   /**
    * Provides base configuration form.
    */
-  public function config_form() {
+  public function loadConfigForm() {
     $form[$this->source_name] = array(
       '#type' => 'fieldset',
       '#title' => t('Channel management for the %source source.', array('%source' => $this->source_name)),
@@ -85,7 +95,7 @@ class EventImporter {
    * Fetch Events from remote source and import bookings.
    */
   public function importBookingsFromSource() {
-    $events = $this->fetch();
+    $events = $this->fetchEvents();
     $this->importBookings($events);
     if (isset($this->config->module) && isset($this->config->unit_id)) {
       $record = array(
@@ -95,20 +105,6 @@ class EventImporter {
       );
       drupal_write_record('rooms_channel_manager_sources', $record, array('module', 'unit_id'));
     }
-  }
-
-  /**
-   * Fetch Events to import.
-   *
-   * @return array events
-   */
-  public function fetch() {}
-
-  /**
-   * Find customer name for an event.
-   */
-  public function getCustomerName($event) {
-    return '';
   }
 
   /**
@@ -123,7 +119,7 @@ class EventImporter {
       $unit_email = $account->mail;
     }
     // Get this unit's availability calendar.
-    $uc = new UnitCalendar($this->config->unit_id);
+    $uc = new \UnitCalendar($this->config->unit_id);
 
     // Import external events.
     foreach ($events as $event) {
@@ -139,8 +135,8 @@ class EventImporter {
         }
 
         // Check if a locked event is blocking the update.
-        $start_date = DateTime::createFromFormat('Y-m-d', $event['startDate']);
-        $end_date = DateTime::createFromFormat('Y-m-d', $event['endDate']);
+        $start_date = \DateTime::createFromFormat('Y-m-d', $event['startDate']);
+        $end_date = \DateTime::createFromFormat('Y-m-d', $event['endDate']);
         $adjusted_end_date = clone($end_date);
         $adjusted_end_date->modify('-1 day');
         $states_confirmed = $uc->getStates($start_date, $adjusted_end_date);
@@ -180,7 +176,7 @@ class EventImporter {
 
 
         // Make a user ID for this customer.
-        $account = new StdClass();
+        $account = new \StdClass();
         $account->name = rooms_channel_manager_unique_username($name);
         $account->pass = user_password(20);
         $account->status = 1;
@@ -210,9 +206,9 @@ class EventImporter {
       }
       else {
         $event_id = ROOMS_NOT_AVAILABLE;
-        $startDateTime = DateTime::createFromFormat('Y-m-d', $event['startDate']);
-        $endDateTime = DateTime::createFromFormat('Y-m-d', $event['endDate']);
-        $be = new BookingEvent($this->config->unit_id, $event_id, $startDateTime, $endDateTime);
+        $startDateTime = \DateTime::createFromFormat('Y-m-d', $event['startDate']);
+        $endDateTime = \DateTime::createFromFormat('Y-m-d', $event['endDate']);
+        $be = new \BookingEvent($this->config->unit_id, $event_id, $startDateTime, $endDateTime);
         $events = array($be);
         $response = $uc->updateCalendar($events);
         if ($response[$event_id] == ROOMS_BLOCKED) {
@@ -223,6 +219,13 @@ class EventImporter {
         }
       }
     }
+  }
+
+  /**
+   * Find customer name for an event.
+   */
+  public function getCustomerName($event) {
+    return '';
   }
 
 }
